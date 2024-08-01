@@ -1,12 +1,8 @@
-import express from "express"; 
-import userRouter from "./user.js";
+import express from 'express';
+import userRouter from './user.js'; // Asegúrate de que la ruta sea correcta
 
-const apiRoutes = express.Router()
+const apiRoutes = express.Router();
 
+apiRoutes.use('/user', userRouter);
 
-apiRoutes.use("/user", userRouter)
-
-
-
-
-export default apiRoutes
+export default apiRoutes;

@@ -1,32 +1,48 @@
-import { UserModel } from "../models/user.js";
+import bcrypt from 'bcrypt';
+import { UserModel } from '../models/user.js';
+import { generateToken } from '../config/jwtConfig.js';
+
 export const saveUsers = async (req, res) => {
-    const data = req.body
-    try {
-        
-        const user = new UserModel(data)
-
-        const userSaved = await user.save()
-        
-        res.status(200).json(userSaved)
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            message: "Error contacte al administrador"
-        })
-    }
-    
-}
-
-export const LogIn = async (req, res) => {
-    const { email, password, username} = req.body
+    const { username, email, password } = req.body;
 
     try {
-        
-        const user = await UserModel.findOne({username, email, password})    
+        // Hash de la contraseña
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        res.status(200).json({status: true, user})
+        const user = new UserModel({
+            username,
+            email,
+            password: hashedPassword,
+        });
+
+        const userSaved = await user.save();
+
+        // Generar un token para el nuevo usuario
+        // const token = generateToken(userSaved);
+
+        res.status(201).json(userSaved);
     } catch (error) {
-        console.log(error);
-        res.status(404).json(false)
+        console.error('Error saving user:', error);
+        res.status(500).json({ message: "Error contacte al administrador" });
     }
-}
+};
+
+export const logIn = async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const user = await UserModel.findOne({ email });
+        
+        if (!user || !( bcrypt.compare(password, user.password))) {
+            return res.status(401).json({ message: "Credenciales incorrectas" });
+        }
+        
+        // Generar un token para el usuario autenticado
+        const token = generateToken(user);
+
+        res.status(200).json({ user, token });
+    } catch (error) {
+        console.error('Error logging in user:', error);
+        res.status(500).json({ message: "Error contacte al administrador" });
+    }
+};

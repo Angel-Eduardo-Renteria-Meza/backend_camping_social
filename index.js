@@ -1,25 +1,34 @@
-import express from "express"
-import dotenv from "dotenv"
-import { connect } from "./config/db.js"
-import apiRoutes from "./routes/apiRoutes.js"
-import cors from "cors"
+import express from 'express';
+import dotenv from 'dotenv';
+import { connect } from './config/db.js';
+import apiRoutes from './routes/apiRoutes.js';
+import cors from 'cors';
+import morgan from 'morgan';
 
-const server = express()
+const server = express();
 
 dotenv.config({
-    path: ".env"
-})
+    path: '.env'
+});
 
-server.use(express.json())
+// Middleware para parsear JSON y formularios URL-encoded
+server.use(express.json());
+server.use(express.urlencoded({ extended: true }));
 
-server.use(cors())
+// Middleware para registro de solicitudes
+server.use(morgan('dev'));
 
-connect()
+// Middleware para permitir CORS
+server.use(cors());
 
-server.use("/server", apiRoutes)
+// Conectar a la base de datos
+connect();
 
-server.listen(process.env.PORT ,() => {
-    console.log(`Puerto escuchando en ${
-      process.env.PORT  
-    }`);
-})
+// Usar las rutas API
+server.use('/server', apiRoutes);
+
+// Iniciar el servidor
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Puerto escuchando en ${PORT}`);
+});
