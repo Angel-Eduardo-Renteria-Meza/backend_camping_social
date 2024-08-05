@@ -4,9 +4,16 @@ import { connect } from './config/db.js';
 import apiRoutes from './routes/apiRoutes.js';
 import cors from 'cors';
 import morgan from 'morgan';
+import path from 'path'
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 const server = express();
 
+
+const __filename = fileURLToPath(import.meta.url);
+
+const __dirname = dirname(__filename);
 dotenv.config({
     path: '.env'
 });
@@ -14,6 +21,7 @@ dotenv.config({
 // Middleware para parsear JSON y formularios URL-encoded
 server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
+server.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Middleware para registro de solicitudes
 server.use(morgan('dev'));
